@@ -12,11 +12,11 @@ async function main() {
 
   // ---------Admin--------- //
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@PandaTutor.com' },
+    where: { email: 'admin@Eduzen.com' },
     update: { password: adminPassword },
     create: {
       name: 'Admin sir',
-      email: 'admin@PandaTutor.com',
+      email: 'admin@Eduzen.com',
       password: adminPassword,
       role: Role.ADMIN,
     },

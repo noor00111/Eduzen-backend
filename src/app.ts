@@ -10,17 +10,16 @@ import categoryRoutes from "./routes/categoryRoutes";
 
 export const app: Express = express();
 
-// ----------middlewares--------- //
 app.use(
   cors({
-    origin: ['https://panda-tutor-frontend.vercel.app', 'http://localhost:3000'],
+    origin: ['https://eduzen-livid.vercel.app', 'http://localhost:3000'],
     credentials: true,
   }),
 );
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("PandaTutor API is running");
+  res.send("Eduzen API is running");
 });
 
 app.use("/api/auth", authRoutes);

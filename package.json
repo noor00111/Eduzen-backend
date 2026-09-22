@@ -1,7 +1,7 @@
 {
-  "name": "PandaTutor-backend",
+  "name": "Eduzen-backend",
   "version": "1.0.0",
-  "description": "PandaTutor API Backend",
+  "description": "Eduzen API Backend",
   "main": "dist/server.js",
   "prisma": {
     "seed": "tsx prisma/seed.ts"
