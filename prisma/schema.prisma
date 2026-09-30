@@ -41,6 +41,7 @@ model TutorProfile {
   userId       String        @unique
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   bio          String?       @db.Text
+  photoUrl     String?
   hourlyRate   Float         @default(0.0)
   rating       Float         @default(0.0)
   totalReviews Int           @default(0)

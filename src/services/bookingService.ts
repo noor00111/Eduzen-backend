@@ -1,9 +1,5 @@
 import { PrismaClient, BookingStatus, Role } from "@prisma/client";
-import {
-  NotFoundError,
-  BadRequestError,
-  ForbiddenError,
-} from "../utils/errors";
+import {NotFoundError, BadRequestError, ForbiddenError} from "../utils/errors";
 
 const prisma = new PrismaClient();
 
@@ -25,16 +21,11 @@ export class BookingService {
     }
 
     const bookingDate = new Date(date);
-
-    // --------Check tutor availability slot----------- //
     const dayOfWeek = bookingDate.getUTCDay();
     const bookingTime = `${String(bookingDate.getUTCHours()).padStart(2, "0")}:${String(bookingDate.getUTCMinutes()).padStart(2, "0")}`;
-
+    
     const availability = await prisma.availability.findFirst({
-      where: {
-        tutorProfile: { userId: tutorId },
-        dayOfWeek,
-      },
+      where: {tutorProfile: { userId: tutorId }, dayOfWeek,},
     });
 
     if (!availability) {
@@ -45,15 +36,11 @@ export class BookingService {
         bookingTime < availability.startTime ||
         bookingTime >= availability.endTime
       ) {
-        throw new BadRequestError(
-          `Tutor is not available at this time. Available on this day: ${availability.startTime} – ${availability.endTime}`,
-        );
+        throw new BadRequestError(`Tutor is not available at this time. Available on this day: ${availability.startTime} – ${availability.endTime}`);
       }
     
-    // ----------Check double booking for student at same time------- //
     const studentConflict = await prisma.booking.findFirst({
-      where: {
-        studentId,
+      where: {studentId,
         date: bookingDate,
         status: BookingStatus.CONFIRMED,
       },
@@ -63,7 +50,6 @@ export class BookingService {
       throw new BadRequestError("You already have a booking at this time");
     }
 
-    // ---------------Check tutor is not double-booked--------------- //
     const existing = await prisma.booking.findFirst({
       where: {
         tutorId,
@@ -84,7 +70,6 @@ export class BookingService {
         status: BookingStatus.CONFIRMED,
       },
     });
-
     return booking;
   }
 
@@ -94,9 +79,7 @@ export class BookingService {
       whereClause = { studentId: userId };
     } else if (role === Role.TUTOR) {
       whereClause = { tutorId: userId };
-    } else {
-      // Admin gets all, or specific logic
-    }
+    } else {}
 
     const bookings = await prisma.booking.findMany({
       where: whereClause,
@@ -106,7 +89,6 @@ export class BookingService {
       },
       orderBy: { date: "asc" },
     });
-
     return bookings;
   }
 
@@ -123,8 +105,7 @@ export class BookingService {
       throw new NotFoundError("Booking not found");
     }
 
-    if (
-      role !== Role.ADMIN &&
+    if (role !== Role.ADMIN &&
       booking.studentId !== userId &&
       booking.tutorId !== userId
     ) {
@@ -132,7 +113,6 @@ export class BookingService {
         "You do not have permission to view this booking",
       );
     }
-
     return booking;
   }
 
@@ -150,7 +130,6 @@ export class BookingService {
       throw new NotFoundError("Booking not found");
     }
 
-    // ------------role checks-------------
     if (role === Role.STUDENT) {
       if (booking.studentId !== userId)
         throw new ForbiddenError("Not your booking");
@@ -165,9 +144,9 @@ export class BookingService {
       where: { id: bookingId },
       data: { status },
     });
-
     return updatedBooking;
   }
+
   static async hasAvailability(tutorId: string): Promise<boolean> {
     const count = await prisma.availability.count({
       where: {

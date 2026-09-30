@@ -17,16 +17,12 @@ export class AuthService {
       throw new BadRequestError('Invalid role specified');
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
-
+    const existingUser = await prisma.user.findUnique({where: { email }});
     if (existingUser) {
       throw new BadRequestError('Email already in use');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const user = await prisma.user.create({
       data: {
         name,
@@ -34,7 +30,6 @@ export class AuthService {
         password: hashedPassword,
         role: role as Role,
 
-        //------------ create a basic tutor profile if role is TUTOR ------------//
         ...(role === Role.TUTOR ? {
           tutorProfile: {
             create: {}
@@ -51,21 +46,16 @@ export class AuthService {
     });
 
     const token = generateToken({ userId: user.id, role: user.role });
-
     return { user, token };
   }
 
   static async login(data: any) {
     const { email, password } = data;
-
     if (!email || !password) {
       throw new BadRequestError('Missing email or password');
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
-
+    const user = await prisma.user.findUnique({where: { email }});
     if (!user) {
       throw new UnauthorizedError('Invalid credentials');
     }
@@ -80,7 +70,6 @@ export class AuthService {
     }
 
     const token = generateToken({ userId: user.id, role: user.role });
-
     const { password: _, ...userWithoutPassword } = user;
     return { user: userWithoutPassword, token };
   }
@@ -103,7 +92,6 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedError('User not found');
     }
-
     return user;
   }
 
@@ -117,27 +105,19 @@ export class AuthService {
       throw new UnauthorizedError('User not found');
     }
 
-    //------------ Execute in transaction to ensure complete cleanup -----------------//
     await prisma.$transaction(async (tx) => {
-
-      //--------- 1. Delete associated student & tutor bookings -------------//
       await tx.booking.deleteMany({
         where: { OR: [{ studentId: userId }, { tutorId: userId }] }
       });
-
-      //---------- 2. Delete associated student & tutor reviews -------------//
       await tx.review.deleteMany({
         where: { OR: [{ studentId: userId }, { tutorId: userId }] }
       });
 
-      //----------- 3. Delete tutor profile if it exists (Automatically cascades availabilities) ---------------//
       if (user.tutorProfile) {
         await tx.tutorProfile.delete({
           where: { userId: userId }
         });
       }
-
-      //------------ 4. Finally delete user ---------//
       await tx.user.delete({
         where: { id: userId }
       });

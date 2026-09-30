@@ -23,7 +23,6 @@ export class ReviewService {
       throw new NotFoundError('Tutor not found');
     }
 
-    // ------ensure student has a COMPLETED booking with this tutor----------//
     const completedBooking = await prisma.booking.findFirst({
       where: {
         studentId,
@@ -36,7 +35,6 @@ export class ReviewService {
       throw new BadRequestError('You can only review tutors you have completed a session with');
     }
 
-    // ----------Create review--------- //
     const review = await prisma.review.create({
       data: {
         studentId,
@@ -46,7 +44,6 @@ export class ReviewService {
       }
     });
 
-    // ----------Update tutor's average rating ---------- //
     const aggregated = await prisma.review.aggregate({
       where: { tutorId },
       _avg: { rating: true },

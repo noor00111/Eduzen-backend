@@ -45,7 +45,6 @@ export class TutorService {
         subjects: true,
       }
     });
-
     return tutors;
   }
 
@@ -65,7 +64,6 @@ export class TutorService {
       throw new NotFoundError('Tutor not found');
     }
 
-    // -------latest reviews----------- //
     
     const reviews = await prisma.review.findMany({
       where: { tutorId: tutor.userId },
@@ -75,14 +73,12 @@ export class TutorService {
         student: { select: { name: true } }
       }
     });
-
     return { ...tutor, reviews };
   }
 
-  // -------------Updated by the tutor ----------- //
 
   static async updateProfile(userId: string, data: any) {
-    const { bio, hourlyRate, subjectIds } = data;
+    const { bio, hourlyRate, subjectIds, photoUrl } = data;
 
     const tutorProfile = await prisma.tutorProfile.findUnique({
       where: { userId }
@@ -95,7 +91,8 @@ export class TutorService {
     let updateData: any = {};
     if (bio !== undefined) updateData.bio = bio;
     if (hourlyRate !== undefined) updateData.hourlyRate = parseFloat(hourlyRate);
-    
+    if (photoUrl !== undefined) updateData.photoUrl = photoUrl;
+
     if (subjectIds && Array.isArray(subjectIds)) {
       updateData.subjects = {
         set: subjectIds.map(id => ({ id }))
@@ -107,7 +104,6 @@ export class TutorService {
       data: updateData,
       include: { subjects: true }
     });
-
     return updated;
   }
 
@@ -122,7 +118,6 @@ export class TutorService {
     }
 
   
-    // ----------- wrap in transaction---------- //
     await prisma.$transaction([
       prisma.availability.deleteMany({
         where: { tutorProfileId: tutorProfile.id }
@@ -140,7 +135,6 @@ export class TutorService {
     const newAvailabilities = await prisma.availability.findMany({
       where: { tutorProfileId: tutorProfile.id }
     });
-
     return newAvailabilities;
   }
 }
