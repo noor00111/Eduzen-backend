@@ -84,7 +84,7 @@ export class AuthService {
         role: true,
         isBanned: true,
         tutorProfile: {
-          include: { subjects: true }
+          include: { subjects: true, availabilities: true }
         },
       }
     });
