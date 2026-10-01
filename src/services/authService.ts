@@ -82,6 +82,7 @@ export class AuthService {
         name: true,
         email: true,
         role: true,
+        photoUrl: true,
         isBanned: true,
         tutorProfile: {
           include: { subjects: true, availabilities: true }
@@ -92,6 +93,37 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedError('User not found');
     }
+    return user;
+  }
+
+  static async updateMe(userId: string, data: any) {
+    const { name, email, photoUrl } = data;
+
+    if (email) {
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (existing && existing.id !== userId) {
+        throw new BadRequestError('Email already in use');
+      }
+    }
+
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+    if (photoUrl !== undefined) updateData.photoUrl = photoUrl;
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        photoUrl: true,
+        isBanned: true,
+      }
+    });
+
     return user;
   }
 

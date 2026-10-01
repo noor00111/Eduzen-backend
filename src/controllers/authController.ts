@@ -27,6 +27,15 @@ export class AuthController {
     });
   }
 
+  static async updateMe(req: Request, res: Response) {
+    const userId = req.user!.userId;
+    const user = await AuthService.updateMe(userId, req.body);
+    res.status(200).json({
+      status: 'success',
+      data: { user },
+    });
+  }
+
   static async deleteMe(req: Request, res: Response) {
     const userId = req.user!.userId;
     const result = await AuthService.deleteMe(userId);
